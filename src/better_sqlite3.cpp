@@ -431,6 +431,8 @@ void Database::JS_new (v8::FunctionCallbackInfo <v8 :: Value> const & info)
                 if ( info . Length ( ) <= ( 5 ) || ! info [ 5 ] -> IsInt32 ( ) ) return ThrowTypeError ( "Expected " "sixth" " argument to be " "a 32-bit signed integer" ) ; int timeout = ( info [ 5 ] . As < v8 :: Int32 > ( ) ) -> Value ( ) ;
                 if ( info . Length ( ) <= ( 6 ) ) return ThrowTypeError ( "Expected a " "seventh" " argument" ) ; v8 :: Local < v8 :: Value > logger = info [ 6 ] ;
                 if ( info . Length ( ) <= ( 7 ) ) return ThrowTypeError ( "Expected a " "eighth" " argument" ) ; v8 :: Local < v8 :: Value > buffer = info [ 7 ] ;
+                if ( info . Length ( ) <= ( 8 ) || ! info [ 8 ] -> IsBoolean ( ) ) return ThrowTypeError ( "Expected " "seventh" " argument to be " "a 32-bit signed integer" ) ; bool shared = ( info [ 8 ] . As < v8 :: Boolean > ( ) ) -> Value ( ) ;
+
 
                 Addon * addon = static_cast < Addon * > ( info . Data ( ) . As < v8 :: External > ( ) -> Value ( ) ) ;
                 v8 :: Isolate * isolate = info . GetIsolate ( ) ;
@@ -440,6 +442,10 @@ void Database::JS_new (v8::FunctionCallbackInfo <v8 :: Value> const & info)
                         : must_exist ? SQLITE_OPEN_READWRITE
                         : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
 
+                if(shared) {
+                        mask |= (SQLITE_OPEN_URI | SQLITE_OPEN_SHAREDCACHE);
+                }
+                
                 if (sqlite3_open_v2(*utf8, &db_handle, mask, NULL) != SQLITE_OK) {
                         ThrowSqliteError(addon, db_handle);
                         int status = sqlite3_close(db_handle);

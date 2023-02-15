@@ -183,4 +183,25 @@ describe('new Database()', function () {
 		expect(MyDatabase.prototype).to.equal(Object.getPrototypeOf(db));
 		expect(db.foo()).to.equal(999);
 	});
+
+	it('should allow anonymous in-memory databases to be created with cache shared', function () {
+		const db =  new Database('file::memory:?cache=shared', {shared: true});
+		const db2 = new Database('file::memory:?cache=shared', {shared: true});
+
+		const r1 = db.exec('CREATE TABLE entries_2 (a TEXT, b INTEGER)');
+		const r2 = db.exec("INSERT INTO entries_2 VALUES ('foobar', 44); INSERT INTO entries_2 VALUES ('baz', NULL);");
+		const r3 = db.exec('SELECT * FROM entries_2');
+
+		expect(r1).to.equal(db);
+		expect(r2).to.equal(db);
+		expect(r3).to.equal(db);
+
+		const rows = db2.prepare('SELECT * FROM entries_2 ORDER BY rowid').all();
+		expect(rows.length).to.equal(2);
+		expect(rows[0].a).to.equal('foobar');
+		expect(rows[0].b).to.equal(44);
+		expect(rows[1].a).to.equal('baz');
+		expect(rows[1].b).to.equal(null);
+
+	});
 });
