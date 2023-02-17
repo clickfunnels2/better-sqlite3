@@ -204,4 +204,40 @@ describe('new Database()', function () {
 		expect(rows[1].b).to.equal(null);
 
 	});
+
+
+	it('should allow named in-memory databases to be created with vfs memdb', function () {
+		const db =  new Database();
+	
+		db.exec('CREATE TABLE entries (a TEXT, b INTEGER)');
+		db.exec("INSERT INTO entries VALUES ('foobar', 44); INSERT INTO entries VALUES ('baz', NULL);");
+		db.exec('SELECT * FROM entries');
+
+		const buffer = db.serialize();
+
+		const db2 = new Database('file:/dbname?vfs=memdb');
+		db2.deserialize(buffer);
+
+		let rows = db2.prepare('SELECT * FROM entries ORDER BY rowid').all();
+		
+		expect(rows.length).to.equal(2);
+		expect(rows[0].a).to.equal('foobar');
+		expect(rows[0].b).to.equal(44);
+		expect(rows[1].a).to.equal('baz');
+		expect(rows[1].b).to.equal(null);
+
+		const db3 = new Database('file:/dbname?vfs=memdb');
+		rows = db3.prepare('SELECT * FROM entries ORDER BY rowid').all();
+		
+		expect(rows.length).to.equal(2);
+		expect(rows[0].a).to.equal('foobar');
+		expect(rows[0].b).to.equal(44);
+		expect(rows[1].a).to.equal('baz');
+		expect(rows[1].b).to.equal(null);
+
+		const db4 = new Database('file:/dbname2?vfs=memdb');
+		expect(() => db4.prepare('SELECT * FROM entries ORDER BY rowid').all()).to.throw(Database.SqliteError).with.property('code', 'SQLITE_ERROR');
+		
+	});
+
 });

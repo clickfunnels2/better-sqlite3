@@ -10435,6 +10435,16 @@ SQLITE_API int sqlite3_deserialize(
   unsigned mFlags         /* Zero or more SQLITE_DESERIALIZE_* flags */
 );
 
+SQLITE_API int sqlite3_deserialize_v2(
+  sqlite3 *db,            /* The database connection */
+  const char *zSchema,    /* Which DB to reopen with the deserialization */
+  unsigned char *pData,   /* The serialized database content */
+  sqlite3_int64 szDb,     /* Number bytes in the deserialization */
+  sqlite3_int64 szBuf,    /* Total size of buffer pData[] */
+  unsigned mFlags         /* Zero or more SQLITE_DESERIALIZE_* flags */
+);
+
+
 /*
 ** CAPI3REF: Flags for sqlite3_deserialize()
 **
